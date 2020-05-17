@@ -120,9 +120,3 @@ class GetData:
         :return: (None, float, int, dict)
         """
         return self.data
-
-
-# for country in DEVELOPING_COUNTRIES:
-#     print(country)
-#     print(GetData().get_quandl_year(country, 2))
-#     print('\n')
