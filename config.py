@@ -12,6 +12,7 @@ INDEX_DICT = {
 }
 
 QUANDL = {
+    1: 'Corruption Perceptions Index (https://en.wikipedia.org/wiki/Corruption_Perceptions_Index)',
     2: 'Bribery index (% of gift or informal payment requests during public transactions)',
     3: 'Percent of firms choosing corruption as their biggest obstacle',
     4: 'Percent of firms expected to give gifts to public officials "to get things done"',
@@ -19,6 +20,16 @@ QUANDL = {
     6: 'Percent of firms identifying corruption as a major constraint',
     7: 'Percent of firms identifying the courts system as a major constraint',
     8: 'Value of gift expected to secure a government contract (% of contract value)'
+}
+
+QUANDL_YEARS = {
+    2: ['2007', '2010', '2006', '2013', '2009'],
+    3: ['2016', '2010', '2006', '2013', '2009'],
+    4: ['2005', '2010', '2006', '2013', '2009'],
+    5: ['2005', '2010', '2006', '2013', '2009'],
+    6: ['2005', '2010', '2006', '2013', '2009'],
+    7: ['2016', '2010', '2006', '2013', '2009'],
+    8: ['2005', '2010', '2006', '2013', '2009']
 }
 
 ISO = {
