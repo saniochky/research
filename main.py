@@ -2,8 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import geopandas as gpd
-import slug
-from config import DEVELOPING_COUNTRIES, QUANDL, ISO
+from config import DEVELOPING_COUNTRIES, QUANDL, ISO, QUANDL_YEARS
 from get_data import GetData
 
 cpi_table = None
@@ -17,17 +16,13 @@ def cpi_info(country, year):
     :return: (str, None)
     """
     value = np.nan
+
     if country in DEVELOPING_COUNTRIES:
         value = cpi_table[country][cpi_table['Country'].index(year)]
         if type(value) == str:
             value = float(value)
 
     return value
-
-
-# ////*************---------------//////
-# 456646657 ///////////******        ////-
-# 2005647545149 9999+ ///////*+21313
 
 
 def get_year(country, index):
@@ -49,122 +44,157 @@ def get_data(country, index, year):
     :param year: str
     :return: (str, list, None)
     """
+    # Define variables
+    error = "Sorry, there is not data about this country this year"
+    data = None
+
+    # Define what type of data should be displayed
+    # Single data
     if type(country) == str:
         if index == '1':
             data = cpi_info(country, year)
         else:
-            data = GetData(country, int(index), year)
-            data = data.export_data()
+            data = GetData(country, int(index), year).export_data()
+
+        # Display data
+        if data is None:
+            print('\n')
+            print(error)
+        else:
+            print('\n')
+            print('\\' * (len(str(data)) + 10))
+            print('\\' * 4, str(data), '\\' * 4)
+            print('\\' * (len(str(data)) + 10))
+
+    # Visualize data about all countries
     elif country == DEVELOPING_COUNTRIES:
-        if index == '1':
-            visualize_map_cpi(year)
-        else:
-            visualize_map_quandl(index, year)
+        print('\nPlease wait up to two minutes...')
+        visualize_map(create_dataframe(index, year), index, year)
+
+    # Visualize data about specific countries
     else:
-        if index == '1':
-            visualize_bar_cpi(country, year)
-        else:
-            visualize_bar_quandl(country, index, year)
-            pass
+        print('\nPlease wait few seconds...')
+        visualize_bar(country, index, year)
 
 
-def visualize_bar_cpi(countries, year):
+def visualize_bar(countries, index, year):
     """
-
-    :param countries:
-    :param year:
-    :return:
+    Visualizes Cdata about several countries as a bar plot
+    :param countries: list
+    :param index: str
+    :param year: str
+    :return: None
     """
+    # define variables
+    if index == '1':
+        description = 'The Corruption Perceptions Index (CPI) is an index published annually by ' \
+                      'Transparency International since 1995, which ranks countries \n"by their ' \
+                      'perceived levels of public sector corruption, as determined by expert ' \
+                      'assessments and opinion surveys"  • Author: Oleksandr Dubas'
+        title = f'CPI in {year}'
+    else:
+        description = 'The information is provided by Quandl • https://www.quandl.com/ • Author: Oleksandr Dubas'
+        title = f'{QUANDL[int(index)]}'
+
+    # Make list of available data
     if countries:
         values = []
         objects = []
         for country in countries:
-            value = cpi_info(country, year)
+            if index == '1':
+                value = cpi_info(country, year)
+            else:
+                value = GetData(country, int(index), year).export_data()
+
             if value is not None:
                 objects.append(country.upper())
                 values.append(value)
 
+        # Create bar plot if data exists
         if objects:
             y_pos = np.arange(len(objects))
 
             plt.barh(y_pos, values, align='center', alpha=1)
             plt.yticks(y_pos, objects)
-            plt.xlabel('CPI')
-            plt.title(f'CPI in {year} year')
+            plt.xlabel(description)
+            plt.title(title)
 
             for i, v in enumerate(values):
                 plt.text(v, i, str(v))
 
+            # Display bar plot
             plt.show()
+
+        # Print massage if there is no available data
         else:
             print("There is no information about these countries this year")
     else:
         print("There is no information about these countries this year")
 
 
-def visualize_bar_quandl(countries, index, year):
-    if countries:
-        values = []
-        objects = []
-        for country in countries:
-            value = GetData(country, int(index), year).export_data()
-            if value is not None:
-                objects.append(country.upper())
-                values.append(float(value))
-
-        if objects:
-            y_pos = np.arange(len(objects))
-
-            plt.barh(y_pos, values, align='center', alpha=1)
-            plt.yticks(y_pos, objects)
-            plt.xlabel(QUANDL[int(index)])
-            plt.title(f'Year {year}')
-
-            for i, v in enumerate(values):
-                plt.text(v, i, str(v))
-
-            plt.show()
-        else:
-            print("There is no information about these countries this year")
-    else:
-        print("There is no information about these countries this year")
-
-
-def visualize_map_cpi(year):
+def create_dataframe(index, year):
     """
-
-    :param year:
-    :return:
+    Creates pandas dataframe that will be used in visualization
+    :param index: str
+    :param year: str
+    :return: dataframe
     """
-    shapefile = 'ne_10m_admin_0_countries_lakes.shp'
-    colors = 10
-    cmap = 'OrRd'
-    figsize = (16, 10)
-    cols = ['Country Name', 'Country Code', year]
-    title = f'CPI in year {year}'
-
-    description = '''
-     The Corruption Perceptions Index (CPI) is an index published annually by Transparency International since 1995, which ranks countries
-    "by their perceived levels of public sector corruption, as determined by expert assessments and opinion surveys"  • Author: Oleksandr Dubas'''.strip()
-
-    gdf = gpd.read_file(shapefile)[['ADM0_A3', 'geometry']].to_crs('+proj=robin')
-
+    # Define variables
     data = {
         'Country Name': [],
         'Country Code': [],
         year: []
     }
 
+    # Create datafreme
     for country in ISO:
-        value = cpi_info(country, year)
-        data['Country Name'].append(country.upper())
+        if index == '1':
+            value = cpi_info(country, year)
+        else:
+            value = GetData(country, int(index), year).export_data()
+            if value is None:
+                value = np.nan
+        data['Country Name'].append(country)
         data['Country Code'].append(ISO[country])
         data[year].append(value)
 
     df = pd.DataFrame(data, columns=['Country Name', 'Country Code', year])
 
+    return df
+
+
+def visualize_map(df, index, year):
+    """
+    Visualizes data about all countries on a map
+    :param df: dataframe
+    :param index: str
+    :param year: str
+    :return:
+    """
+    # Define variables
+    shapefile = 'ne_10m_admin_0_countries_lakes.shp'
+    colors = 10
+    cmap = 'OrRd'
+    figsize = (16, 10)
+    if index == '1':
+        title = f'CPI in {year}'
+        description = 'The Corruption Perceptions Index (CPI) is an index published annually by ' \
+                      'Transparency International since 1995, which ranks countries \n"by their ' \
+                      'perceived levels of public sector corruption, as determined by expert ' \
+                      'assessments and opinion surveys"  • Author: Oleksandr Dubas'
+    else:
+        title = f'{QUANDL[int(index)]} in {year}'
+        description = 'The information is provided by Quandl • https://www.quandl.com/ • Author: Oleksandr Dubas'
+
+    # Create geopandas dataframe
+    gdf = gpd.read_file(shapefile)[['ADM0_A3', 'geometry']].to_crs('+proj=robin')
+
+    # Merge both data frames
     merged = gdf.merge(df, left_on='ADM0_A3', right_on='Country Code')
-    ax = merged.dropna().plot(column=year, cmap=cmap, figsize=figsize, scheme='quantiles', k=colors, legend=True, edgecolor='black')
+
+    # Create a map using matplotlib
+    ax = merged.dropna().plot(column=year, cmap=cmap, figsize=figsize,
+                              scheme='quantiles', k=colors, legend=True, edgecolor='black')
 
     merged[merged.isna().any(axis=1)].plot(ax=ax, color='lightgrey', hatch='///', edgecolor="black")
 
@@ -175,17 +205,8 @@ def visualize_map_cpi(year):
     ax.set_xlim([-1.5e7, 1.7e7])
     ax.get_legend().set_bbox_to_anchor((.12, .4))
 
+    # Display map
     plt.show()
-
-
-def visualize_map_quandl(index, year):
-    """
-
-    :param index:
-    :param year:
-    :return:
-    """
-    pass
 
 
 def first_choose():
@@ -196,7 +217,7 @@ def first_choose():
     # Define variables
     user_choice = None
     available_choices = ['1', '2']
-    text = 'Would you like to know information about separate country \n' \
+    text = '\nWould you like to know information about separate country \n' \
            'or visualize some information about two or more? \n' \
            'Type \'1\' or \'2\': '
 
@@ -214,19 +235,20 @@ def second_choose():
     """
     # Define variables
     user_choice = None
-    available_choices = ['1', '2', '3', '4', '5', '6', '7', '8']
+    available_choices = [str(x) for x in range(1, 9)]
     text = '\nWhat information you would like to know? \n' \
-           '1. Corruption Perceptions Index (https://en.wikipedia.org/wiki/Corruption_Perceptions_Index)\n' \
-           '2. Bribery index (% of gift or informal payment requests during public transactions) \n' \
-           '3. Percent of firms choosing corruption as their biggest obstacle \n' \
-           '4. Percent of firms expected to give gifts to public officials "to get things done" \n' \
-           '5. Percent of firms expected to give gifts to secure government contract \n' \
-           '6. Percent of firms identifying corruption as a major constraint \n' \
-           '7. Percent of firms identifying the courts system as a major constraint \n' \
-           '8. Value of gift expected to secure a government contract (% of contract value) \n'
-    repeat = 'Type number from 1 to 8: '
+           f'1. {QUANDL[1]}\n' \
+           f'2. {QUANDL[2]}\n' \
+           f'3. {QUANDL[3]}\n' \
+           f'4. {QUANDL[4]}\n' \
+           f'5. {QUANDL[5]}\n' \
+           f'6. {QUANDL[6]}\n' \
+           f'7. {QUANDL[7]}\n' \
+           f'8. {QUANDL[8]}\n'
+    repeat = '\nType number from 1 to 8: '
 
     print(text)
+
     # Get user`s choice
     while user_choice not in available_choices:
         user_choice = input(repeat)
@@ -244,9 +266,10 @@ def third_choose(mode):
     user_choice = ''
     countries = []
     available_choices = DEVELOPING_COUNTRIES.copy()
-    text_1 = 'Type a country you would like to know about: '
-    text_2 = 'Type countries you would like to know about. (If you want choose all, type \'all\') \n' \
-             'When finished just type \'proceed\' \n'
+    text_1 = '\nType a country you would like to know about: '
+    text_2 = '\nType countries you would like to know about one by one. \n' \
+             'When finished just type \'proceed\' \n' \
+             'If you want choose all countries, type \'all\' \n'
     repeat = 'Done! What next? '
     error = 'Sorry, there is not information about this country. Try again: '
 
@@ -260,13 +283,16 @@ def third_choose(mode):
         return user_choice.lower()
 
     elif mode == 2:
+
         # Get user`s choice
         user_choice = input(text_2)
+
         while user_choice.lower() != 'all' and user_choice.lower() != 'proceed':
-            if user_choice.lower() not in available_choices or user_choice.lower() in countries:
+            if user_choice.lower() not in available_choices:
                 user_choice = input(error)
             else:
-                countries.append(user_choice.lower())
+                if user_choice.lower() not in countries:
+                    countries.append(user_choice.lower())
                 user_choice = input(repeat)
 
         if user_choice == 'all':
@@ -288,38 +314,50 @@ def fourth_choose(country, index):
     """
     # Define variables
     user_choice = None
-    available_choices_1 = [str(x) for x in range(1995, 2019)]
-    text_1 = 'Choose a year between 1995 and 2018: '
+    error = 'Sorry, there is no available data for this country'
 
     # Define the available choices
     if index == '1':
-        available_choices = available_choices_1
-        text = text_1
-    elif index != '1' and type(country) == str:
-        available_choices = get_year(country, int(index))
-        text = 'Choose a year. Available years: \n' \
-               f'{" ".join(available_choices)} \n'
+        available_choices = [str(x) for x in range(1995, 2019)]
+        text = '\nChoose a year between 1995 and 2018: '
     else:
-        # Get available years to show data
-        years_dict = {}
+        if type(country) == str:
+            value = get_year(country, int(index))
+            available_choices = [x for x in value]
+            text = f'\nChoose a year. Available years: {" ".join(available_choices)} \n'
+        else:
+            if country == DEVELOPING_COUNTRIES:
+                available_choices = QUANDL_YEARS[int(index)]
+                if available_choices:
+                    text = f'\nChoose a year. Available years: {" ".join(available_choices)} \n' \
+                           '(The first available year has least data, the last one has the most): '
+            else:
+                # Get available years to show data
+                years_dict = {}
 
-        for c in country:
-            value = GetData().get_quandl_year(c, int(index))
-            for year in value:
-                if year in years_dict:
-                    years_dict[year] += 1
-                else:
-                    years_dict[year] = 1
+                for c in country:
+                    value = GetData().get_quandl_year(c, int(index))
+                    for year in value:
+                        if year in years_dict:
+                            years_dict[year] += 1
+                        else:
+                            years_dict[year] = 1
 
-        available_choices = [x for x in years_dict]
-        available_choices = sorted(available_choices, key=lambda x: years_dict[x])
-        text = 'Choose a year. Available years \n' \
-               '(The first available year has less data, the last one has more): \n' \
-               f'{" ".join(available_choices)} \n'
+                available_choices = [x for x in years_dict]
+                if available_choices:
+                    available_choices = sorted(available_choices, key=lambda x: years_dict[x])
+                    text = f'\nChoose a year. Available years: {" ".join(available_choices)} \n' \
+                           '(The first available year has least data, the last one has the most): '
 
     # Get user`s choice
-    while user_choice not in available_choices:
-        user_choice = input(text)
+    if available_choices:
+        if type(country) == list:
+            print('\nNOTE: Information about some countries may not be shown.\n'
+                  'It means that data is missing in the source.')
+        while user_choice not in available_choices:
+            user_choice = input(text)
+    else:
+        print(error)
 
     return user_choice
 
@@ -330,24 +368,40 @@ def main():
     :return: (str, None)
     """
     # Define variables
-    intro = "This program is made to help in researching about \n" \
-            "Corruption in Developing countries in comparison with Ukraine"
+    intro = "\nThis program is made to help in researching about \n" \
+            "Corruption in Developing countries in comparison with Ukraine \n"
     note = "The list of all available countries is in config.py \n" \
            "Some information about specific countries or specific years \n" \
-           "May be missing \n"
-    no_data = "Sorry, there is not data about this country this year"
+           "May be missing"
 
+    # Print start information
     print(intro)
-    print('NOTE')
+    print('NOTE \n')
     print(note)
 
+    # Create CPI table
     global cpi_table
     cpi_table = GetData().get_cpi_table()
-    first_choice = first_choose()
-    second_choice = second_choose()
-    third_choice = third_choose(int(first_choice))
-    fourth_choice = fourth_choose(third_choice, second_choice)
-    get_data(third_choice, second_choice, fourth_choice)
+
+    # Make screenplay
+    def screenplay():
+        repeat = None
+        choice = '\nWould you like to know something more (y/n)? '
+        mode = first_choose()
+        sort = second_choose()
+        country = third_choose(int(mode))
+        year = fourth_choose(country, sort)
+        if year:
+            get_data(country, sort, year)
+
+        while repeat != 'y' and repeat != 'n':
+            repeat = input(choice)
+
+        if repeat == 'y':
+            screenplay()
+
+    # Start
+    screenplay()
 
 
 if __name__ == '__main__':
