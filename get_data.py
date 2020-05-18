@@ -21,7 +21,7 @@ class GetData:
             assert 2 <= index <= 8, 'Index range must be from 2 to 8'
 
             self.country = country
-            self.iso = DEVELOPING_COUNTRIES_ISO[self.country]
+            self.iso = ISO[self.country]
             self.index = INDEX_DICT[index]
             self.year = year
             self.api_key = API_KEY
