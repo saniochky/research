@@ -7,17 +7,31 @@ This program was developed to analyse the corruption in Ukraine and compare it w
 To install this program you need to download all files from folder "Corruption research", find file main.py and run it. Make sure that you have Python version 3.8 and installed all required libraries
 
 Required libraries:
+
 *json
+
 *requests
+
 *urllib
+
 *lxml
+
 *matplotlib
+
 *numpy
+
 *pandas
+
 *geopandas
+
 *shapely
+
 *fiona
+
 *GDAL
+
 *pyproj
+
 *six
+
 *mapclassify
