@@ -9,7 +9,6 @@ To install this program you need to download all files from folder "Corruption r
 Required libraries:
 
 json
-
 requests
 
 urllib
