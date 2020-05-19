@@ -1,0 +1,1 @@
+To run the program make sure that your Python version is 3.7 or higher and all required libraries are installed. Then run main.py
