@@ -38,4 +38,5 @@ mapclassify
 
 # Usage
 After starting the program all instruction will be displayed on the screen. As a result of all made instructions on the screen you should receive value/bar plot/map or warning that information was not found
+
 **If some problem occurs please check if you have made right installation, check all libraries and their versions that should be installed on your computer**
