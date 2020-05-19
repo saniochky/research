@@ -8,30 +8,30 @@ To install this program you need to download all files from folder "Corruption r
 
 Required libraries:
 
-*json
+json
 
-*requests
+requests
 
-*urllib
+urllib
 
-*lxml
+lxml
 
-*matplotlib
+matplotlib
 
-*numpy
+numpy
 
-*pandas
+pandas
 
-*geopandas
+geopandas
 
-*shapely
+shapely
 
-*fiona
+fiona
 
-*GDAL
+GDAL
 
-*pyproj
+pyproj
 
-*six
+six
 
-*mapclassify
+mapclassify
