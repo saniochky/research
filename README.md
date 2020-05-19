@@ -9,6 +9,7 @@ To install this program you need to download all files from folder "Corruption r
 Required libraries:
 
 json
+
 requests
 
 urllib
@@ -34,3 +35,7 @@ pyproj
 six
 
 mapclassify
+
+# Usage
+After starting the program all instruction will be displayed on the scree
+**If some problem occurs please check if you have made right installation, check all libraries and their versions that should be installed on your computer**
